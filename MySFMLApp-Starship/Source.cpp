@@ -33,7 +33,6 @@ private:
     sf::Image image;
 public:
     Asteroid() {
-
         if (!image.loadFromFile("images/asteroid.png")) {
             std::cerr << "Ошибка загрузки текстуры астероида!" << std::endl;
             exit(1);
@@ -56,7 +55,6 @@ private:
     sf::Image image;
 public:
     Star() {
-        
         if (!image.loadFromFile("images/star.png")) {
             std::cerr << "Ошибка загрузки текстуры астероида!" << std::endl;
             exit(1);
@@ -81,21 +79,16 @@ bool intersectsAny(const sf::Sprite& sprite, const std::vector<sf::Sprite>& othe
     return false;
 }
 
-
-
 int main() {
     setlocale(LC_ALL, "RUS");
     sf::RenderWindow window(sf::VideoMode(1920, 1080), "SFML Example");
     srand(static_cast<unsigned>(time(nullptr)));
-
 
     // Создание ракеты
     Rocket rocket;
     sf::Sprite spriteRocket;
     bool startRocket = false;
     std::vector<sf::Sprite> rockets;
-
-
 
     // Загрузка корабля
     sf::Texture heroTexture;
@@ -106,7 +99,6 @@ int main() {
 
     sf::Sprite heroSprite;
     heroSprite.setTexture(heroTexture);
-    heroSprite.setTextureRect(sf::IntRect(0, 0, 762, 559));
     heroSprite.setScale(0.25f, 0.25f);
     heroSprite.setRotation(90);
     heroSprite.setPosition(250.f, 250.f);
@@ -133,18 +125,10 @@ int main() {
         stars[i].setPosition(1920.f + i * 400.f, static_cast<float>(rand() % 800 + 100)); // Начальная позиция астероидов
     }
 
-    //std::vector<sf::Sprite> asteroids(3);
-    //Asteroid asteroid;
-    //for (int i = 0; i < 3; i++) {
-    //    asteroids[i] = asteroid.getSprite();
-    //    asteroids[i].setPosition(1920.f + i * 400.f, static_cast<float>(rand() % 800 + 100));
-    //}
-
     std::vector<sf::Sprite> asteroids(3); // Список для астероидов
     Asteroid asteroid;
     for (int i = 0; i < 3; i++) {
         sf::Sprite s = asteroid.getSprite();
-
         bool safePosition = false;
         while (!safePosition) {
             s.setPosition(1920.f + i * 400.f, static_cast<float>(rand() % 800 + 100));
@@ -154,7 +138,6 @@ int main() {
                 safePosition = true; // Если не пересекается, это безопасная позиция
             }
         }
-
         asteroids[i] = s; // Добавление безопасного астероида в вектор
     }
 
@@ -220,13 +203,13 @@ int main() {
     exitMenuButton.setString("Exit");
     exitMenuButton.setPosition(850.f, 500.f);
 
-    
-
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed)
+            if (event.type == sf::Event::Closed) {
                 window.close();
+            }
+
             if (ignoreNextClick) {
                 if (inMenu && event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
                     if (playButton.getGlobalBounds().contains(event.mouseButton.x, event.mouseButton.y)) {
@@ -239,7 +222,7 @@ int main() {
                     }
                 }
             }
-            
+
             else {
                 if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
                     if (rockets.size() < 3) {
@@ -248,12 +231,8 @@ int main() {
                         
                         rockets.push_back(spriteRocket);
                     }
-
-
                 }
             }
-            
-
         }
         window.clear();
         
@@ -265,12 +244,9 @@ int main() {
             continue;
         }
 
-        
-        
         else {
             float time = clock.restart().asSeconds();
             if (!gameOver) {
-
                 
                 // Движение корабля
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
@@ -283,7 +259,7 @@ int main() {
                 // Движение ракеты
                 for (int i = 0; i < rockets.size(); i++) {
                     rockets[i].move(200 * time, 0);
-
+                    
                     // Если ракета вышла за экран — удаляем
                     if (rockets[i].getPosition().x > 1920) {
                         rockets.erase(rockets.begin() + i);
@@ -302,21 +278,18 @@ int main() {
                         }
                     }
                 }
-
-
                 
-                
-                
-
                 // Движение фона
                 background1.move(-300.f * time, 0.f);
                 background2.move(-300.f * time, 0.f);
 
-                if (background1.getPosition().x <= -1920)
+                if (background1.getPosition().x <= -1920) {
                     background1.setPosition(background2.getPosition().x + 1920, 0.f);
-                if (background2.getPosition().x <= -1920)
+                }
+                if (background2.getPosition().x <= -1920) {
                     background2.setPosition(background1.getPosition().x + 1920, 0.f);
-
+                }
+                
                 // Движение астероидов
                 for (int i = 0; i < 5; i++) {
                     stars[i].move(-200.f * time, 0);
@@ -325,13 +298,10 @@ int main() {
                         stars[i].setPosition(1920.f, static_cast<float>(rand() % 800 + 100)); // Возврат астероида на правую сторону экрана
                     }
 
-
                     if (heroSprite.getGlobalBounds().intersects(stars[i].getGlobalBounds())) {
                         score += 10;
                         stars[i].setPosition(1920.f, static_cast<float>(rand() % 800 + 100));
                     }
-
-
                 }
 
                 // Движение комет
@@ -342,16 +312,13 @@ int main() {
                         asteroids[i].setPosition(1920.f, static_cast<float>(rand() % 800 + 100)); // Возврат астероида на правую сторону экрана
                     }
 
-
                     if (heroSprite.getGlobalBounds().intersects(asteroids[i].getGlobalBounds())) {
                         gameOver = true;
-                        asteroids[i].setPosition(1920.f, static_cast<float>(rand() % 800 + 100));
                     }
                 }
             }
 
             // Обновление текста с очками
-
             window.clear();
             scoreText.setString("Scores: " + std::to_string(score));
             window.draw(background1);
@@ -366,14 +333,14 @@ int main() {
                 window.draw(rocketSprite);
             }
 
-           
-
-            for (const auto& star : stars)
+            for (const auto& star : stars) {
                 window.draw(star);
-
-            for (const auto& asteroid : asteroids)
+            }
+                
+            for (const auto& asteroid : asteroids) {
                 window.draw(asteroid);
-
+            }
+                
             for (int i = 0; i < rockets.size(); i++) {
                 sf::FloatRect rocketBounds = rockets[i].getGlobalBounds();
                 rocketBounds.left += 5;
@@ -407,7 +374,6 @@ int main() {
             }
 
             if (gameOver) {
-
                 window.draw(diedButton);
                 window.draw(restartButton);
                 window.draw(exitButton);
@@ -416,7 +382,6 @@ int main() {
                         gameOver = false;
                         score = 0;
                         heroSprite.setPosition(250.f, 250.f);
-                        
                         rockets.clear();
 
                         for (int i = 0; i < 3; i++) {
@@ -430,109 +395,12 @@ int main() {
                     else if (exitButton.getGlobalBounds().contains(event.mouseButton.x, event.mouseButton.y)) {
                         window.close();
                     }
-
                 }
             }
             window.display();
         }
-        
-        
     }
-
     return 0;
 }
 
-//#include <SFML/Graphics.hpp>
-//
-//// Загружаем астероид с удалением цвета фона
-//sf::Sprite LoadAsteroid(sf::Texture& texture) {
-//    sf::Image image;
-//    if (!image.loadFromFile("images/asteroid.png")) {
-//        exit(1);
-//    }
-//
-//    // Удаляем цвет, например, (13, 17, 132)
-//    image.createMaskFromColor(sf::Color(13, 17, 132));
-//
-//    texture.loadFromImage(image);
-//
-//    sf::Sprite sprite;
-//    sprite.setTexture(texture);
-//    sprite.setTextureRect(sf::IntRect(0, 0, texture.getSize().x, texture.getSize().y));
-//    sprite.setScale(0.25f, 0.25f);
-//    sprite.setPosition(500.f, 500.f);  // начальная позиция
-//
-//    return sprite;
-//}
-//
-//int main() {
-//    sf::RenderWindow window(sf::VideoMode(1920, 1080), "SFML Example");
-//
-//    // Загрузка текстуры и спрайта корабля
-//    sf::Texture heroTexture;
-//    heroTexture.loadFromFile("images/starship.png");
-//
-//    sf::Sprite heroSprite;
-//    heroSprite.setTexture(heroTexture);
-//    heroSprite.setTextureRect(sf::IntRect(0, 0, 762, 559));
-//    heroSprite.setScale(0.25f, 0.25f);
-//    heroSprite.setRotation(90);
-//    heroSprite.setPosition(250.f, 250.f);
-//
-//    // Загрузка фона
-//    sf::Texture spaceTexture;
-//    spaceTexture.loadFromFile("images/galaxy.png");
-//
-//    sf::RectangleShape background1(sf::Vector2f(1920, 1080));
-//    background1.setTexture(&spaceTexture);
-//    background1.setPosition(0.f, 0.f);
-//
-//    sf::RectangleShape background2(sf::Vector2f(1920, 1080));
-//    background2.setTexture(&spaceTexture);
-//    background2.setPosition(1920.f, 0.f);
-//
-//    // Загрузка астероида
-//    sf::Texture asteroidTexture;
-//    sf::Sprite asteroidSprite = LoadAsteroid(asteroidTexture);
-//
-//    sf::Clock clock;
-//
-//    while (window.isOpen()) {
-//        sf::Event event;
-//        while (window.pollEvent(event)) {
-//            if (event.type == sf::Event::Closed)
-//                window.close();
-//        }
-//
-//        float time = clock.restart().asSeconds();
-//
-//        // Движение корабля
-//        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
-//            heroSprite.move(0.f, -700.f * time);
-//        }
-//        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
-//            heroSprite.move(0.f, 700.f * time);
-//        }
-//
-//        // Движение фона
-//        background1.move(-300.f * time, 0.f);
-//        background2.move(-300.f * time, 0.f);
-//
-//        if (background1.getPosition().x <= -1920)
-//            background1.setPosition(background2.getPosition().x + 1920, 0.f);
-//        if (background2.getPosition().x <= -1920)
-//            background2.setPosition(background1.getPosition().x + 1920, 0.f);
-//
-//        // Движение астероида влево
-//        asteroidSprite.move(-300.f * time, 0.f);
-//
-//        window.clear();
-//        window.draw(background1);
-//        window.draw(background2);
-//        window.draw(heroSprite);
-//        window.draw(asteroidSprite);
-//        window.display();
-//    }
-//
-//    return 0;
-//}
+
