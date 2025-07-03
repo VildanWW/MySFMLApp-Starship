@@ -1,4 +1,5 @@
 ﻿#include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <iostream>
 #include <vector>
 #include <cstdlib>
@@ -160,6 +161,20 @@ int main() {
     bool gameOver = false;
     bool inMenu = true;
     bool ignoreNextClick = true;
+    sf::SoundBuffer buffer;
+    if (!buffer.loadFromFile("sounds/soundFireRocket.mp3")) {
+        std::cerr << "Ошибка загрузки звука!" << std::endl;
+    }
+    sf::Sound sound;
+    sound.setBuffer(buffer);
+
+    sf::SoundBuffer buffer1;
+    if (!buffer1.loadFromFile("sounds/soundCollisionRocketAndAsteroid.mp3")) {
+        std::cerr << "Ошибка загрузки звука!" << std::endl;
+    }
+    sf::Sound sound1;
+    sound1.setBuffer(buffer1);
+
 
     sf::Text diedButton;
     diedButton.setFont(font);
@@ -203,6 +218,14 @@ int main() {
     exitMenuButton.setString("Exit");
     exitMenuButton.setPosition(850.f, 500.f);
 
+    sf::Text textWin;
+    sf::Text textExit;
+    sf::Text textComeBackMenu;
+    float time;
+    bool lastMenu = false;
+    bool dark = false;
+    bool win = false;
+
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
@@ -230,12 +253,22 @@ int main() {
                         spriteRocket.setPosition(heroSprite.getPosition().x, heroSprite.getPosition().y + 80.f);
                         
                         rockets.push_back(spriteRocket);
+                        if (gameOver != true && !lastMenu) {
+                            sound.play();
+                        }
+                        
                     }
+                }
+                if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::P) {
+                    lastMenu = !lastMenu;  
+                    time = clock.restart().asSeconds();
                 }
             }
         }
         window.clear();
         
+        
+
         if (inMenu) {
             window.draw(titleText);
             window.draw(playButton);
@@ -244,8 +277,106 @@ int main() {
             continue;
         }
 
+        else if (lastMenu) {
+            
+            textExit.setFont(font);
+            textExit.setCharacterSize(60);
+            textExit.setFillColor(sf::Color::Green);
+            textExit.setString("Do you want to exit the game?");
+            textExit.setPosition(500.f, 400.f);
+            window.draw(textExit);
+            
+            textComeBackMenu.setFont(font);
+            textComeBackMenu.setCharacterSize(60);
+            textComeBackMenu.setFillColor(sf::Color::Green);
+            textComeBackMenu.setString("Return to main menu?");
+            textComeBackMenu.setPosition(500.f, 500.f);
+            window.draw(textComeBackMenu);
+
+            sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+            sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
+
+            if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+                if (textComeBackMenu.getGlobalBounds().contains(worldPos)) {
+                    dark = true;
+                    
+                }
+                else if (textExit.getGlobalBounds().contains(worldPos)) {
+                    return 0;
+                }
+            }
+            if (dark) {
+                inMenu = true;
+                ignoreNextClick = true;
+                lastMenu = false;
+
+                rockets.clear();
+
+                asteroids.clear();
+                for (int i = 0; i < 3; i++) {
+                    
+                    sf::Sprite s = asteroid.getSprite();
+                    bool safePosition = false;
+                    while (!safePosition) {
+                        s.setPosition(1920.f + i * 400.f, static_cast<float>(rand() % 800 + 100));
+                        if (!intersectsAny(s, stars)) {
+                            safePosition = true;
+                        }
+                    }
+                    asteroids.push_back(s);
+                }
+
+                stars.clear();
+                for (int i = 0; i < 5; i++) {
+                    
+                    sf::Sprite s = star.getSprite();
+                    s.setPosition(1920.f + i * 400.f, static_cast<float>(rand() % 800 + 100));
+                    stars.push_back(s);
+                }
+
+
+                heroSprite.setPosition(250.f, 250.f);
+                gameOver = false;
+                clock.restart();
+                dark = false;
+                
+            }
+
+            time = clock.restart().asSeconds();
+            window.display();
+            continue;
+        }
+
+        else if (score >=1000) {
+            textWin.setFont(font);
+            textWin.setCharacterSize(60);
+            textWin.setFillColor(sf::Color::Green);
+            textWin.setString("YOU WIN!!!");
+            textWin.setPosition(750.f, 200.f);
+            window.draw(textWin);
+            
+
+            textExit.setFont(font);
+            textExit.setCharacterSize(60);
+            textExit.setFillColor(sf::Color::Green);
+            textExit.setString("Do you want to exit the game?");
+            textExit.setPosition(500.f, 400.f);
+            window.draw(textExit);
+
+            sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+            sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
+
+            if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+                
+                if (textExit.getGlobalBounds().contains(worldPos)) {
+                    return 0;
+                }
+            }
+            window.display();
+        }
+
         else {
-            float time = clock.restart().asSeconds();
+            time = clock.restart().asSeconds();
             if (!gameOver) {
                 
                 // Движение корабля
@@ -258,7 +389,7 @@ int main() {
                 
                 // Движение ракеты
                 for (int i = 0; i < rockets.size(); i++) {
-                    rockets[i].move(200 * time, 0);
+                    rockets[i].move(500 * time, 0);
                     
                     // Если ракета вышла за экран — удаляем
                     if (rockets[i].getPosition().x > 1920) {
@@ -275,6 +406,7 @@ int main() {
                             asteroids[i].setPosition(1920.f, static_cast<float>(rand() % 800 + 100));
                             rockets.erase(rockets.begin() + j);
                             j--;
+                            sound1.play();
                         }
                     }
                 }
@@ -317,6 +449,8 @@ int main() {
                     }
                 }
             }
+
+            
 
             // Обновление текста с очками
             window.clear();
@@ -373,6 +507,8 @@ int main() {
                 window.draw(debugAsteroid);
             }
 
+
+
             if (gameOver) {
                 window.draw(diedButton);
                 window.draw(restartButton);
@@ -399,7 +535,10 @@ int main() {
             }
             window.display();
         }
+        
+    
     }
+    
     return 0;
 }
 
