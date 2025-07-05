@@ -12,7 +12,7 @@ Asteroids and stars as obstacles and bonus items
 
 Score system and win condition (win at 1000 points)
 
-Game Over and Win screens
+Game Over screen
 
 Main Menu and Exit option
 
